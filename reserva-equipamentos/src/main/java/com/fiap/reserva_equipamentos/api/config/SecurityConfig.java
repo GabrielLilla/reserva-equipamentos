@@ -21,21 +21,25 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth
-                    // Swagger livre
-                    .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // H2 Console (dev)
+                        .requestMatchers("/h2-console/**").permitAll()
 
-                    // Regras específicas para Professores
-                    .requestMatchers(HttpMethod.GET, "/api/professores/**").hasAnyRole("PROF", "ADMIN")
-                    .requestMatchers(HttpMethod.POST, "/api/professores/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/api/professores/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.DELETE, "/api/professores/**").hasRole("ADMIN")
+                        // Swagger livre
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
-                    // Demais recursos já existentes
-                    .requestMatchers("/api/equipamentos/**", "/api/reservas/**").hasAnyRole("PROF", "ADMIN")
+                        // Regras específicas para Professores
+                        .requestMatchers(HttpMethod.GET, "/api/professores/**").hasAnyRole("PROF", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/professores/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/professores/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/professores/**").hasRole("ADMIN")
 
-                    // Qualquer outra rota exige autenticação
-                    .anyRequest().authenticated()
+                        // Demais recursos já existentes
+                        .requestMatchers("/api/equipamentos/**", "/api/reservas/**").hasAnyRole("PROF", "ADMIN")
+
+                        // Qualquer outra rota exige autenticação
+                        .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());
         return http.build();
